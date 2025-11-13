@@ -9,11 +9,26 @@
 #include "hardware/uart.h"
 
 #include "TFTMaster.h"
-
+#include "rotary.h"
 
 
 
 int main()
 {
+    // Initialize stdio
+    stdio_init_all();
 
+    tft_init_hw();
+    tft_begin();
+    tft_setRotation(3); 
+    tft_fillScreen(ILI9340_GREEN);
+
+    rotary_init();
+
+    printf("\nHello world");
+
+    while(true){
+        rotary_service();
+        display_counts();
+    }
 }

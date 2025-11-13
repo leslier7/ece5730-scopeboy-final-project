@@ -37,7 +37,8 @@ pico_sdk_init()
 
 add_executable(Final_Project 
                 Final_Project.c 
-                TFTMaster.c)
+                TFTMaster.c
+                rotary.c)
 
 pico_set_program_name(Final_Project "Final_Project")
 pico_set_program_version(Final_Project "0.1")
