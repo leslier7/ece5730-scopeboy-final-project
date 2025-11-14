@@ -6,7 +6,7 @@
 	(paper "A2")
 	(title_block
 		(title "ScopeBoy")
-		(date "2025-11-13")
+		(date "2025-11-14")
 		(company "Cornell University")
 		(comment 1 "Modified by Robbie Leslie")
 		(comment 2 "Original design by Jenny List")
@@ -5690,6 +5690,12 @@
 		(uuid "28582c18-ba93-4a3a-9ec1-f07b7c6828be")
 	)
 	(junction
+		(at 370.84 175.26)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "2b57ac24-327b-421a-992f-984f17875d6d")
+	)
+	(junction
 		(at 193.04 226.06)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5706,6 +5712,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "362a01c2-91cc-4293-a223-34ebbaf3d617")
+	)
+	(junction
+		(at 382.27 172.72)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3744f3c9-b2b6-46ef-ada5-318e0ff49f6a")
 	)
 	(junction
 		(at 134.62 132.08)
@@ -5928,6 +5940,16 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f3f3e923-8058-44c1-b646-60a1246d6c41")
+	)
+	(wire
+		(pts
+			(xy 382.27 168.91) (xy 382.27 172.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "001ca787-eeb9-4a17-9af4-923e428cfc01")
 	)
 	(wire
 		(pts
@@ -6801,7 +6823,7 @@
 	)
 	(wire
 		(pts
-			(xy 364.49 177.8) (xy 378.46 177.8)
+			(xy 364.49 177.8) (xy 383.54 177.8)
 		)
 		(stroke
 			(width 0)
@@ -7701,6 +7723,16 @@
 	)
 	(wire
 		(pts
+			(xy 370.84 175.26) (xy 383.54 175.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ba5e5d7f-bdee-4def-a940-f411f2296167")
+	)
+	(wire
+		(pts
 			(xy 361.95 71.12) (xy 369.57 71.12)
 		)
 		(stroke
@@ -7891,6 +7923,16 @@
 	)
 	(wire
 		(pts
+			(xy 370.84 168.91) (xy 370.84 175.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ccba03ec-ca81-47fe-9153-e86ae2f83795")
+	)
+	(wire
+		(pts
 			(xy 193.04 76.2) (xy 190.5 76.2)
 		)
 		(stroke
@@ -7951,7 +7993,7 @@
 	)
 	(wire
 		(pts
-			(xy 364.49 172.72) (xy 378.46 172.72)
+			(xy 364.49 172.72) (xy 382.27 172.72)
 		)
 		(stroke
 			(width 0)
@@ -8461,13 +8503,23 @@
 	)
 	(wire
 		(pts
-			(xy 364.49 175.26) (xy 378.46 175.26)
+			(xy 364.49 175.26) (xy 370.84 175.26)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "fe1ef7b0-cd8e-483c-9c7a-ec95bcddb2a4")
+	)
+	(wire
+		(pts
+			(xy 382.27 172.72) (xy 383.54 172.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "feceb377-6a99-4490-ae2b-beacca327ade")
 	)
 	(wire
 		(pts
@@ -8863,7 +8915,7 @@
 	)
 	(global_label "ROTSW"
 		(shape input)
-		(at 378.46 177.8 0)
+		(at 383.54 177.8 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -8873,7 +8925,7 @@
 		)
 		(uuid "18a79d25-d218-48d9-940d-ac5467279fd7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 387.02 177.8 0)
+			(at 392.1 177.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9149,7 +9201,7 @@
 	)
 	(global_label "ROTDT"
 		(shape input)
-		(at 378.46 175.26 0)
+		(at 383.54 175.26 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9159,7 +9211,7 @@
 		)
 		(uuid "494abafc-bef3-4111-81ea-fa5def0ea0e6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 386.5967 175.26 0)
+			(at 391.6767 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9633,7 +9685,7 @@
 	)
 	(global_label "ROTCLK"
 		(shape input)
-		(at 378.46 172.72 0)
+		(at 383.54 172.72 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9643,7 +9695,7 @@
 		)
 		(uuid "b4f35a22-5860-49a7-82ac-b75be1e8a010")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 387.9272 172.72 0)
+			(at 393.0072 172.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23305,6 +23357,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 382.27 165.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5636db1b-6caa-40aa-964f-e96852ef90b1")
+		(property "Reference" "C32"
+			(at 386.08 163.8299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10nF"
+			(at 386.08 166.3699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 383.2352 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 382.27 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 382.27 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c47d111f-6915-4ec7-8cd0-7a727d250f84")
+		)
+		(pin "2"
+			(uuid "bc77c131-09e3-4f7c-a473-c3371993131b")
+		)
+		(instances
+			(project "rpicoscope2"
+				(path "/2076768e-0a0e-474e-af8c-3f53cea9ee9d"
+					(reference "C32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic:Conn_01x03")
 		(at 180.34 332.74 0)
 		(unit 1)
@@ -23372,6 +23494,71 @@
 			(project ""
 				(path "/2076768e-0a0e-474e-af8c-3f53cea9ee9d"
 					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 370.84 161.29 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5e4f8a5e-54eb-43f3-a2b9-f57753392cfa")
+		(property "Reference" "#PWR0114"
+			(at 370.84 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 370.713 156.8958 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 370.84 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 370.84 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 370.84 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3d0bbd02-c10c-4265-b82b-7ba6649482ac")
+		)
+		(instances
+			(project "rpicoscope2"
+				(path "/2076768e-0a0e-474e-af8c-3f53cea9ee9d"
+					(reference "#PWR0114")
 					(unit 1)
 				)
 			)
@@ -24345,6 +24532,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 370.84 165.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d4333542-c5df-4c29-9235-11f309a578a9")
+		(property "Reference" "C31"
+			(at 374.65 163.8299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10nF"
+			(at 374.65 166.3699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 371.8052 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 370.84 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 370.84 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "303239db-0e7b-481c-b144-edbd3a73c1bc")
+		)
+		(pin "2"
+			(uuid "bf483661-714a-468b-b958-a71d92908395")
+		)
+		(instances
+			(project ""
+				(path "/2076768e-0a0e-474e-af8c-3f53cea9ee9d"
+					(reference "C31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GNDA")
 		(at 314.96 259.08 0)
 		(unit 1)
@@ -24468,6 +24725,71 @@
 			(project "rpicoscope2"
 				(path "/2076768e-0a0e-474e-af8c-3f53cea9ee9d"
 					(reference "H3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 382.27 161.29 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "eb405e9a-f900-4acf-b246-1be130759e40")
+		(property "Reference" "#PWR0115"
+			(at 382.27 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 382.143 156.8958 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 382.27 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 382.27 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 382.27 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "82a7fac7-26e2-4a06-834b-19bc83edd082")
+		)
+		(instances
+			(project "rpicoscope2"
+				(path "/2076768e-0a0e-474e-af8c-3f53cea9ee9d"
+					(reference "#PWR0115")
 					(unit 1)
 				)
 			)
