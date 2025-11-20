@@ -67,6 +67,7 @@ target_link_libraries(Final_Project
         hardware_pio
         hardware_timer
         hardware_clocks
+        pico_multicore
         )
 
 pico_add_extra_outputs(Final_Project)

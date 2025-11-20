@@ -1,6 +1,7 @@
 #include "rotary.h"
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "hardware/timer.h"
 #include <string.h>
 
 #include "TFTMaster.h"
@@ -10,20 +11,26 @@ volatile int clkcount = 0;
 volatile bool clk_event = false;
 volatile bool dt_event = false;
 
+volatile uint32_t clk_time;
+volatile uint32_t dt_time;
+
 void gpio_callback(uint gpio, uint32_t events){
     if (gpio == ENCCLK) {
-        // ISR: do minimal work only
         clkcount++;
         clk_event = true;
+        clk_time = time_us_32();
+        gpio_put(PICO_DEFAULT_LED_PIN, true);
     } else if (gpio == ENCDT) {
         dtcount++;
         dt_event = true;
+        dt_time = time_us_32();
+        gpio_put(PICO_DEFAULT_LED_PIN, true);
     }
 }
 
 void rotary_init(){
     gpio_init(ENCCLK);
-    gpio_pull_up(ENCCLK);                 // ensure defined level
+    gpio_pull_up(ENCCLK);                 
     gpio_set_irq_enabled_with_callback(ENCCLK, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
 
     gpio_init(ENCDT);
@@ -32,12 +39,23 @@ void rotary_init(){
 }
 
 void rotary_service(void){
+
+    if(clk_event && dt_event){
+        if(clk_time > dt_time){
+            printf("\nRotating counterclockwise");
+        } else {
+            printf("\nRotating clockwise");
+        }
+    }
+
     if (clk_event){
         clk_event = false;
+        gpio_put(PICO_DEFAULT_LED_PIN, false);
         //printf("\nclk triggered %d", clkcount);
     }
     if (dt_event){
         dt_event = false;
+        gpio_put(PICO_DEFAULT_LED_PIN, false);
         //printf("\ndt triggered %d", dtcount);
     }
 }
