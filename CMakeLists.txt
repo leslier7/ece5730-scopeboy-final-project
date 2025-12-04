@@ -33,10 +33,12 @@ project(Final_Project C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+# TFT_eSPI library removed - using TFTMaster instead
+
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(Final_Project 
-                Final_Project.c 
+                Final_Project.cpp 
                 TFTMaster.c
                 rotary.c)
 
@@ -48,7 +50,7 @@ pico_generate_pio_header(Final_Project ${CMAKE_CURRENT_LIST_DIR}/SPIPIO.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(Final_Project 1)
-pico_enable_stdio_usb(Final_Project 0)
+pico_enable_stdio_usb(Final_Project 1)
 
 # Add the standard library to the build
 target_link_libraries(Final_Project
@@ -67,7 +69,6 @@ target_link_libraries(Final_Project
         hardware_pio
         hardware_timer
         hardware_clocks
-        pico_multicore
         )
 
 pico_add_extra_outputs(Final_Project)
