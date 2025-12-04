@@ -19,7 +19,7 @@
 // ==========================================
 #define PICO_ENC_CLK    14
 #define PICO_ENC_DT     15
-#define PICO_ENC_SW     12 
+#define PICO_ENC_SW     8
 
 // --- I2C/Seesaw Definitions ---
 #define SEESAW_I2C_ADDR         0x50 
@@ -412,39 +412,49 @@ void handleInput() {
 int main() {
     stdio_init_all(); 
     
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+
+    
+
     i2c_init(I2C_PORT, 400 * 1000); 
     gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_PIN);
     gpio_pull_up(I2C_SCL_PIN);
-
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
     
+    
+
     sleep_ms(100); 
 
     uint32_t digital_pins = MASK_A | MASK_B | MASK_X | MASK_Y | MASK_START | MASK_SELECT;
     seesaw_pin_mode_bulk(digital_pins); 
 
+    bool led_on = true;
+    gpio_put(PICO_DEFAULT_LED_PIN, led_on);
+
     rotary_init(); 
+
+    
 
     tft_init_hw();
     tft_begin();
     tft_setRotation(3); // ROTATION 3 (INVERTED LANDSCAPE)
     tft_fillScreen(TFT_BLACK);
     
-    //initDac();
+    initDac();
 
     for(int i=0; i<320; i++) oldWaveY[i] = 120;
 
-    bool led_on = true;
+    
 
     while (true) {
         handleInput();
         drawUI();
         sleep_ms(16); 
 
-        //printf("\nDac return value: %d", setVoltage(CHAN_A, 1.5));
+        int dac_val = setVoltage(CHAN_A, 1.5);
+        printf("\nDac return value: %d", dac_val);
 
         gpio_put(PICO_DEFAULT_LED_PIN, led_on);
         led_on = !led_on;
