@@ -38,9 +38,9 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(Final_Project 
-                Final_Project.cpp 
+                Final_Project.c 
                 TFTMaster.c
-                rotary.c)
+                dac.c)
 
 pico_set_program_name(Final_Project "Final_Project")
 pico_set_program_version(Final_Project "0.1")

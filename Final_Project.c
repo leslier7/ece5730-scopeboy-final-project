@@ -2,16 +2,17 @@
 // Author: Immanuel Varghese Koshy , Robert Leslie
 // Date: 2025-11-20
 #include <stdio.h>
-#include <math.h> 
-#include <cstdio>   
-#include <cstdint>  
+#include <string.h>
+#include <math.h>   
+#include <stdint.h>
+#include <stdbool.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "hardware/timer.h" 
-
-extern "C" {
+#include "pt_cornell_rp2040_v1_4.h"
+#include "dac.h"
 #include "TFTMaster.h"
-}
+
 
 // ==========================================
 // --- ROTARY ENCODER DEFINITIONS ---
@@ -416,6 +417,9 @@ int main() {
     gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_PIN);
     gpio_pull_up(I2C_SCL_PIN);
+
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
     
     sleep_ms(100); 
 
@@ -429,12 +433,21 @@ int main() {
     tft_setRotation(3); // ROTATION 3 (INVERTED LANDSCAPE)
     tft_fillScreen(TFT_BLACK);
     
+    //initDac();
+
     for(int i=0; i<320; i++) oldWaveY[i] = 120;
+
+    bool led_on = true;
 
     while (true) {
         handleInput();
         drawUI();
         sleep_ms(16); 
+
+        //printf("\nDac return value: %d", setVoltage(CHAN_A, 1.5));
+
+        gpio_put(PICO_DEFAULT_LED_PIN, led_on);
+        led_on = !led_on;
     }
     return 0;
 }

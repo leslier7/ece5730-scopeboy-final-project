@@ -5,6 +5,9 @@
 
 #include "TFTMaster.h"
 
+#define ENCCLK 14
+#define ENCDT 15
+
 volatile int dtcount = 0;
 volatile int clkcount = 0;
 volatile bool clk_event = false;
