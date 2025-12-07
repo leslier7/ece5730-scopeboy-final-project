@@ -12,7 +12,8 @@
 #include "pt_cornell_rp2040_v1_4.h"
 #include "dac.h"
 #include "TFTMaster.h"
-
+#include "adc.h"
+#include "pico/multicore.h"
 
 // ==========================================
 // --- ROTARY ENCODER DEFINITIONS ---
@@ -408,14 +409,56 @@ void handleInput() {
     } else btnRecordPressed = false;
 }
 
+// ==================== Blinky Thread ======================
+static PT_THREAD (protothread_blinky(struct pt *pt))
+{
+    PT_BEGIN(pt);
+
+    static bool led_val = false;
+
+    while(1){
+        gpio_put(PICO_DEFAULT_LED_PIN, led_val);
+
+        led_val = !led_val;
+
+        PT_YIELD_usec(200000); //Blink 
+    }
+    PT_END(pt);
+}
+
+// ====================== Serial thread for debugging ==============
+static PT_THREAD (protothread_serial(struct pt *pt))
+{
+    PT_BEGIN(pt);
+
+    //static bool led_val = false;
+
+    static uint8_t temp_buffer[CAPTURE_DEPTH];
+
+    while(1){
+        memcpy(temp_buffer, capture_buf, CAPTURE_DEPTH); // make local copy so that it doesnt change during printing
+        for(int i = 0; i < CAPTURE_DEPTH; i++){
+            printf("\nRead voltage at %d: %f", i, adc_to_volt(capture_buf[i]));
+        }
+
+        PT_YIELD_usec(1000); //Blink 
+    }
+    PT_END(pt);
+}
+
+// Entry point for core 1
+void core1_entry() {
+    pt_add_thread(protothread_blinky);
+    pt_add_thread(protothread_serial);
+    pt_schedule_start ;
+}
+
 // --- Main ---
 int main() {
     stdio_init_all(); 
     
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-
-    
 
     i2c_init(I2C_PORT, 400 * 1000); 
     gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
@@ -430,8 +473,6 @@ int main() {
     uint32_t digital_pins = MASK_A | MASK_B | MASK_X | MASK_Y | MASK_START | MASK_SELECT;
     seesaw_pin_mode_bulk(digital_pins); 
 
-    bool led_on = true;
-    gpio_put(PICO_DEFAULT_LED_PIN, led_on);
 
     rotary_init(); 
 
@@ -446,7 +487,11 @@ int main() {
 
     for(int i=0; i<320; i++) oldWaveY[i] = 120;
 
-    
+    init_adc_capture();
+
+    // start core 1 
+    multicore_reset_core1();
+    multicore_launch_core1(core1_entry);
 
     while (true) {
         handleInput();
@@ -454,10 +499,9 @@ int main() {
         sleep_ms(16); 
 
         int dac_val = setVoltage(CHAN_A, 1.5);
-        printf("\nDac return value: %d", dac_val);
-
-        gpio_put(PICO_DEFAULT_LED_PIN, led_on);
-        led_on = !led_on;
+        //printf("\nDac return value: %d", dac_val);
+        
+        
     }
     return 0;
 }

@@ -40,7 +40,8 @@ pico_sdk_init()
 add_executable(Final_Project 
                 Final_Project.c 
                 TFTMaster.c
-                dac.c)
+                dac.c
+                adc.c)
 
 pico_set_program_name(Final_Project "Final_Project")
 pico_set_program_version(Final_Project "0.1")
@@ -69,6 +70,8 @@ target_link_libraries(Final_Project
         hardware_pio
         hardware_timer
         hardware_clocks
+        hardware_adc
+        pico_multicore
         )
 
 pico_add_extra_outputs(Final_Project)
