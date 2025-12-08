@@ -555,7 +555,11 @@ int main() {
     
     initDac();
 
-    int dac_val = setVoltage(CHAN_TRIG, 0.5f);
+    int dac_val = setVoltage(CHAN_TRIG, 1.65f);
+
+    gain_mode_t cur_gain = GAIN_LOW;
+
+    set_gain(cur_gain);
 
     for(int i=0; i<320; i++) oldWaveY[i] = 120;
 
@@ -570,7 +574,7 @@ int main() {
     // start core 0
     core0_entry();
 
-    gain_mode_t cur_gain = GAIN_LOW;
+    
 
     
 

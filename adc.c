@@ -111,6 +111,10 @@ void set_gain(gain_mode_t gain){
     switch(gain){
         case GAIN_LOW:
             gpio_put(SEL_0, false);
+            gpio_put(SEL_1, false);
+            break;
+        case GAIN_MEDIUM:
+            gpio_put(SEL_0, false);
             gpio_put(SEL_1, true);
             break;
         case GAIN_HIGH:
@@ -119,7 +123,7 @@ void set_gain(gain_mode_t gain){
             break;
         default: //Default to low gain mode
             gpio_put(SEL_0, false);
-            gpio_put(SEL_1, true);
+            gpio_put(SEL_1, false);
             break;
     }
 }

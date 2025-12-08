@@ -7,6 +7,7 @@
 
 typedef enum gain_mode{
     GAIN_LOW,
+    GAIN_MEDIUM,
     GAIN_HIGH
 } gain_mode_t;
 
