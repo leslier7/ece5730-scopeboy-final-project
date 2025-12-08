@@ -5,6 +5,10 @@
 #include "pico/stdlib.h"
 #include "hardware/dma.h"
 #include "hardware/adc.h"
+#include "dac.h"
+
+#define SEL_0 9
+#define SEL_1 8
 
 // Channel 0 is GPIO26
 #define CAPTURE_CHANNEL 0
@@ -12,12 +16,23 @@
 #define ADC_RESOLUTION 256.0 // 8-bit adc
 
 uint8_t capture_buf[CAPTURE_DEPTH];
+uint8_t frame_buf[CAPTURE_DEPTH];
+
+volatile bool trigger_fired = false;  // set by ISR
+volatile bool capture_ready = false;  // main loop can use frame_buf when true
+volatile bool trigger_armed = true;   // allow/ignore triggers
 
 // Pointer to the address of the ADC array
 uint8_t * dma_address_pointer = &capture_buf[0] ;
 
 void init_adc_capture(){
     
+    // Set up gain selector switch
+    gpio_init(SEL_0);
+    gpio_set_dir(SEL_0, GPIO_OUT);
+
+    gpio_init(SEL_1);
+    gpio_set_dir(SEL_1, GPIO_OUT);
 
     // Init GPIO for analogue use: hi-Z, no pulls, disable digital input buffer.
     adc_gpio_init(26 + CAPTURE_CHANNEL);
@@ -90,4 +105,21 @@ void init_adc_capture(){
 
 float adc_to_volt(uint8_t adc_val){
     return (adc_val / ADC_RESOLUTION) * 3.3;
+}
+
+void set_gain(gain_mode_t gain){
+    switch(gain){
+        case GAIN_LOW:
+            gpio_put(SEL_0, false);
+            gpio_put(SEL_1, true);
+            break;
+        case GAIN_HIGH:
+            gpio_put(SEL_0, true);
+            gpio_put(SEL_1, false);
+            break;
+        default: //Default to low gain mode
+            gpio_put(SEL_0, false);
+            gpio_put(SEL_1, true);
+            break;
+    }
 }

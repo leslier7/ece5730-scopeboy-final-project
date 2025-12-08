@@ -2,8 +2,8 @@
 #define DAC_H
 
 enum DAC_Chan {
-    CHAN_A,
-    CHAN_B
+    CHAN_TRIG,
+    CHAN_OFFSET
 };
 
 void initDac();

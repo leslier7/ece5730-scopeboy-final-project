@@ -9,18 +9,19 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "hardware/timer.h" 
-#include "pt_cornell_rp2040_v1_4.h"
-#include "dac.h"
-#include "TFTMaster.h"
-#include "adc.h"
 #include "pico/multicore.h"
+#include "pt_cornell_rp2040_v1_4.h"
+#include "TFTMaster.h"
+#include "dac.h"
+#include "adc.h"
+#include "trigger.h"
 
 // ==========================================
 // --- ROTARY ENCODER DEFINITIONS ---
 // ==========================================
 #define PICO_ENC_CLK    14
 #define PICO_ENC_DT     15
-#define PICO_ENC_SW     8
+#define PICO_ENC_SW     6
 
 // --- I2C/Seesaw Definitions ---
 #define SEESAW_I2C_ADDR         0x50 
@@ -123,16 +124,22 @@ short oldWaveY[320];
 // --- Rotary Encoder Global ---
 volatile int rotaryDelta = 0;
 
+// semaphore
+struct pt_sem trigger_semaphore ;
+
 // ==========================================
 // --- INTERRUPT FOR ENCODER ---
 // ==========================================
-void encoder_callback(uint gpio, uint32_t events) {
+void gpio_callback(uint gpio, uint32_t events) {
     if (gpio == PICO_ENC_CLK) {
         if (gpio_get(PICO_ENC_DT)) {
             rotaryDelta--;
         } else {
             rotaryDelta++;
         }
+    } else if (gpio == TRIG){
+        trigger_isr();
+        PT_SEM_SIGNAL(pt, &trigger_semaphore);
     }
 }
 
@@ -145,7 +152,7 @@ void rotary_init() {
     gpio_init(PICO_ENC_CLK); gpio_set_dir(PICO_ENC_CLK, GPIO_IN); gpio_pull_up(PICO_ENC_CLK);
     gpio_init(PICO_ENC_DT);  gpio_set_dir(PICO_ENC_DT, GPIO_IN);  gpio_pull_up(PICO_ENC_DT);
     gpio_init(PICO_ENC_SW);  gpio_set_dir(PICO_ENC_SW, GPIO_IN);  gpio_pull_up(PICO_ENC_SW); 
-    gpio_set_irq_enabled_with_callback(PICO_ENC_CLK, GPIO_IRQ_EDGE_RISE, true, &encoder_callback);
+    gpio_set_irq_enabled_with_callback(PICO_ENC_CLK, GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
 }
 
 short voltToPixel(float volts) {
@@ -201,6 +208,31 @@ void drawWaveform(short width) {
     }
 }
 
+void drawWaveformFromBuffer(short width) {
+    int prevX = 0;
+    int prevY_new = 120;
+
+    for (int x = 0; x < width && x < CAPTURE_DEPTH; x++) {
+        float volts = adc_to_volt(frame_buf[x]);
+        int newY = voltToPixel(volts);
+
+        if (x > 0) {
+            // Erase old
+            tft_drawLine(prevX, oldWaveY[prevX], x, oldWaveY[x], TFT_BLACK);
+            // Draw new
+            tft_drawLine(prevX, prevY_new, x, newY, TFT_YELLOW);
+
+            // Repair grid
+            if (x % 48 == 0) tft_drawFastVLine(x, 0, 240, TFT_DARKGREY);
+            if (oldWaveY[x] % 48 == 0) tft_drawFastHLine(0, oldWaveY[x], width, TFT_DARKGREY);
+        }
+
+        oldWaveY[x] = newY;
+        prevX = x;
+        prevY_new = newY;
+    }
+}
+
 void drawCursors(short width) {
     if (!showCursors) return;
 
@@ -230,7 +262,7 @@ void drawUI() {
         forceFullRedraw = false; 
     }
 
-    if (isRunning) drawWaveform(scopeWidth);
+    if (isRunning) drawWaveformFromBuffer(scopeWidth); //drawWaveform(scopeWidth);
     drawCursors(scopeWidth);
 
     // --- Smart Text Updates ---
@@ -409,6 +441,36 @@ void handleInput() {
     } else btnRecordPressed = false;
 }
 
+// ==================== Graphics thread ====================
+static PT_THREAD (protothread_graphics(struct pt *pt))
+{
+    PT_BEGIN(pt);
+
+    while(1){
+        handleInput();
+        drawUI();
+        
+        PT_YIELD_usec(16667); //60FPS 
+    }
+    PT_END(pt);
+}
+
+// ==================== Trigger thread =====================
+static PT_THREAD (protothread_trigger(struct pt *pt))
+{
+    PT_BEGIN(pt);
+
+    while(1){
+        
+        PT_SEM_WAIT(pt, &trigger_semaphore); // Wait for trigger semaphore from ISR
+        //printf("\nEntered trigger thread");
+        trigger_copy();
+
+        
+    }
+    PT_END(pt);
+}
+
 // ==================== Blinky Thread ======================
 static PT_THREAD (protothread_blinky(struct pt *pt))
 {
@@ -438,12 +500,20 @@ static PT_THREAD (protothread_serial(struct pt *pt))
     while(1){
         memcpy(temp_buffer, capture_buf, CAPTURE_DEPTH); // make local copy so that it doesnt change during printing
         for(int i = 0; i < CAPTURE_DEPTH; i++){
-            printf("\nRead voltage at %d: %f", i, adc_to_volt(capture_buf[i]));
+            //printf("\nRead voltage at %d: %f", i, adc_to_volt(capture_buf[i]));
+            printf("\nRead voltage at %d: %f", i, adc_to_volt(frame_buf[i]));
         }
 
         PT_YIELD_usec(1000); //Blink 
     }
     PT_END(pt);
+}
+
+// Entry point for core 0
+void core0_entry() {
+    pt_add_thread(protothread_trigger);
+    pt_add_thread(protothread_graphics);
+    pt_schedule_start ;
 }
 
 // Entry point for core 1
@@ -485,21 +555,32 @@ int main() {
     
     initDac();
 
+    int dac_val = setVoltage(CHAN_TRIG, 0.5f);
+
     for(int i=0; i<320; i++) oldWaveY[i] = 120;
 
     init_adc_capture();
+
+    init_trigger();
 
     // start core 1 
     multicore_reset_core1();
     multicore_launch_core1(core1_entry);
 
-    while (true) {
-        handleInput();
-        drawUI();
-        sleep_ms(16); 
+    // start core 0
+    core0_entry();
 
-        int dac_val = setVoltage(CHAN_A, 1.5);
-        //printf("\nDac return value: %d", dac_val);
+    gain_mode_t cur_gain = GAIN_LOW;
+
+    
+
+    while (true) {
+        
+        //sleep_ms(16); 
+
+        
+        // printf("\nDac A return value: %d", dac_val);
+        // printf("\nDac B return value: %d\n", dac_val2);
         
         
     }

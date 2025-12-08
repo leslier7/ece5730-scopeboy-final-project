@@ -23,7 +23,7 @@
 #define PIN_SCK  10
 #define SPI_PORT spi1
 
-#define DAC_config_chan_A 0b0011000000000000
+#define DAC_config_chan_A 0b0001000000000000
 #define DAC_config_chan_B 0b1011000000000000
 
 void initDac(){
@@ -51,28 +51,23 @@ void initDac(){
 
 int setVoltage(int channel, float voltage){
 
+    // DAC has 4.096V range (2.048V VREF × 2x gain)
+    // Still error out if greater than 3.3v since that is the rail
     if(voltage > 3.3 || voltage < 0.0f){
         return -1;
     }
-    uint16_t raw = (uint16_t)(voltage * 4095.0f / 3.3f + 0.5f); // convert + round
+    uint16_t raw = (uint16_t)(voltage * 4095.0f / 4.096f + 0.5f); // convert + round
     uint16_t dac_data; 
 
     switch (channel){
-        case CHAN_A:
-            // Perform an SPI transaction
+        case CHAN_TRIG:
             dac_data = (uint16_t)(DAC_config_chan_A | (raw & 0x0FFF));
-            //gpio_put(PIN_CS, 0);
-            //sleep_us(1);
             int spi_out_a = spi_write16_blocking(SPI_PORT, &dac_data, 1) ;
-            //gpio_put(PIN_CS, 1);
             return spi_out_a;
             break;
-        case CHAN_B:
+        case CHAN_OFFSET:
             dac_data = (uint16_t)(DAC_config_chan_B | (raw & 0x0FFF));
-            //gpio_put(PIN_CS, 0);
-            //sleep_us(1);
             int spi_out_b = spi_write16_blocking(SPI_PORT, &dac_data, 1) ;
-            //gpio_put(PIN_CS, 1);
             return spi_out_b;
             break;
         default: return -1;
