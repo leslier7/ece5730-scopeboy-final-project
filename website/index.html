@@ -156,17 +156,17 @@
         </ul>
       </li>
 
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a class="nav-link" href="#appendix_a">Appendix A (Permissions)</a>
         <ul class="nav flex-column">
-          <li class="nav-item"><a class="nav-link" href="#appendix_a_course">Course website inclusion</a></li>
-          <li class="nav-item"><a class="nav-link" href="#appendix_a_youtube">YouTube channel inclusion</a></li>
+          
         </ul>
-      </li>
+      </li> -->
 
       <li class="nav-item">
-        <a class="nav-link" href="#appendices">Additional Appendices</a>
+        <a class="nav-link" href="#appendices">Appendices</a>
         <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="#appendix_a_permissions">Appendix A: Permissions</a></li>
           <li class="nav-item"><a class="nav-link" href="#appendix_b_code">Appendix B: Program listings</a></li>
           <li class="nav-item"><a class="nav-link" href="#appendix_c_schematics">Appendix C: Schematics</a></li>
           <li class="nav-item"><a class="nav-link" href="#appendix_d_tasks">Appendix D: Team member tasks</a></li>
@@ -301,7 +301,7 @@
 
         <section id="report_design_failed">
           <h3>Things you tried which did not work</h3>
-          <p>Briefly describe failed approaches and what you learned.</p>
+          <p>Our biggest failure was in the PCB. Not because the PCB didn't work or anything. We don't know if the PCB worked, because it wandered off (read: was stollen) over Thanksgiving break. TODO finish this</p>
         </section>
 
         <section id="report_design_ai">
@@ -383,138 +383,128 @@
 
       <hr class="divider">
 
-      <!-- Appendix A (Permissions)
-      ============================ -->
-      <section id="appendix_a">
-        <h2>Appendix A (Permissions)</h2>
-
-        <section id="appendix_a_course">
-          <h3>Project on the course website</h3>
-          <p><strong>Include exactly one of the following sentences:</strong></p>
-          <ul>
-            <li>“The group approves this report for inclusion on the course website.”</li>
-            <li>“The group does not approve this report for inclusion on the course website.”</li>
-          </ul>
-        </section>
-
-        <section id="appendix_a_youtube">
-          <h3>Project video on the course YouTube channel</h3>
-          <p><strong>Include exactly one of the following sentences:</strong></p>
-          <ul>
-            <li>“The group approves the video for inclusion on the course youtube channel.”</li>
-            <li>“The group does not approve the video for inclusion on the course youtube channel.”</li>
-          </ul>
-        </section>
-      </section>
-
-      <hr class="divider">
-
-      <!-- Additional Appendices
+      <!-- Appendices (combined)
       ============================ -->
       <section id="appendices">
-        <h2>Additional Appendices</h2>
+        <h2>Appendices</h2>
 
+        <!-- Appendix A -->
+        <section id="appendix_a_permissions">
+          <h3>Appendix A: Permissions</h3>
+
+          <section id="appendix_a_course">
+            <h4>Project on the course website</h4>
+            <p><strong>Include exactly one of the following sentences:</strong></p>
+            <ul>
+              <li>“The group approves this report for inclusion on the course website.”</li>
+              <li>“The group does not approve this report for inclusion on the course website.”</li>
+            </ul>
+          </section>
+
+          <section id="appendix_a_youtube">
+            <h4>Project video on the course YouTube channel</h4>
+            <p><strong>Include exactly one of the following sentences:</strong></p>
+            <ul>
+              <li>“The group approves the video for inclusion on the course youtube channel.”</li>
+              <li>“The group does not approve the video for inclusion on the course youtube channel.”</li>
+            </ul>
+          </section>
+        </section>
+
+        <!-- Appendix B -->
         <section id="appendix_b_code">
           <h3>Appendix B: Commented program listings</h3>
-          <p>Paste or link to commented C / Python / HDL / etc. listings.</p>
+          <ul>
+            <li>
+              GitHub Repository:
+              <a href="https://github.com/leslier7/ece5730-scopeboy-final-project" target="_blank" rel="noopener noreferrer">Link</a>
+            </li>
+          </ul>
         </section>
 
+        <!-- Appendix C -->
         <section id="appendix_c_schematics">
-        <h3>Appendix C: Schematics</h3>
+          <h3>Appendix C: Schematics</h3>
 
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 1: ScopeBoy Breadboard Schematic
-          </figcaption>
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 1: ScopeBoy Breadboard Schematic
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_breadboard_schematic.svg"
+                alt="ScopeBoy Breadboard Schematic" />
+          </figure>
 
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_breadboard_schematic.svg"
-            alt="ScopeBoy Breadboard Schematic"/>
-        </figure>
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 2: ScopeBoy PCB Schematic
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_pcb_schematic.svg"
+                alt="ScopeBoy PCB Schematic" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 3: ScopeBoy PCB Top Layer
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_pcb/rpicoscope2-F_Cu.svg"
+                alt="ScopeBoy PCB Front" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 4: ScopeBoy PCB Back Layer
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_pcb/rpicoscope2-B_Cu.svg"
+                alt="ScopeBoy PCB Back" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 5: ScopeBoy PCB Signal Layer
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_pcb/rpicoscope2-In2_Cu.svg"
+                alt="ScopeBoy PCB Signal" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 6: ScopeBoy PCB Ground Layer
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_pcb/rpicoscope2-In1_Cu.svg"
+                alt="ScopeBoy PCB Ground" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 7: ScopeBoy PCB 3D Render Top
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_pcb/model_front.png"
+                alt="ScopeBoy PCB 3D Front" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Figure 8: ScopeBoy PCB 3D Render Bottom
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_pcb/model_back.png"
+                alt="ScopeBoy PCB 3D Back" />
+          </figure>
         </section>
 
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 2: ScopeBoy PCB Schematic
-          </figcaption>
-
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_pcb_schematic.svg"
-            alt="ScopeBoy PCB Schematic"/>
-        </figure>
-        </section>
-
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 3: ScopeBoy PCB Top Layer
-          </figcaption>
-
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_pcb/rpicoscope2-F_Cu.svg"
-            alt="ScopeBoy PCB Front"/>
-        </figure>
-        </section>
-
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 3: ScopeBoy PCB Back Layer
-          </figcaption>
-
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_pcb/rpicoscope2-B_Cu.svg"
-            alt="ScopeBoy PCB Back"/>
-        </figure>
-        </section>
-
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 4: ScopeBoy PCB Signal Layer
-          </figcaption>
-
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_pcb/rpicoscope2-In2_Cu.svg"
-            alt="ScopeBoy PCB Signal"/>
-        </figure>
-        </section>
-
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 5: ScopeBoy PCB Ground Layer
-          </figcaption>
-
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_pcb/rpicoscope2-In1_Cu.svg"
-            alt="ScopeBoy PCB Ground"/>
-        </figure>
-        </section>
-
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 6: ScopeBoy PCB 3D Render Top 
-          </figcaption>
-
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_pcb/model_front.png"
-            alt="ScopeBoy PCB 3D Front"/>
-        </figure>
-        </section>
-
-        <figure class="doc-figure">
-          <figcaption class="doc-figure__caption doc-figure__caption--top">
-            Figure 7: ScopeBoy PCB 3D Render Bottom 
-          </figcaption>
-
-          <img class="img-fluid doc-figure__img"
-            src="assets/images/scopeboy_pcb/model_back.png"
-            alt="ScopeBoy PCB 3D Back"/>
-        </figure>
-        </section>
-
+        <!-- Appendix D -->
         <section id="appendix_d_tasks">
           <h3>Appendix D: Team member task breakdown</h3>
           <ul>
             <li><strong>Robbie:</strong> Rotary encoder driver, PCB design, analog circuit redesign and breadboarding, analog circuit code</li>
-            <li><strong>Name:</strong> tasks</li>
+            <li><strong>Immanual:</strong> tasks</li>
           </ul>
         </section>
       </section>
