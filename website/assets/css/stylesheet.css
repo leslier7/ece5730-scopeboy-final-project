@@ -2955,3 +2955,33 @@ input:-internal-autofill-selected {
   left: -40px;
   border-radius: 4px 0px 0px 4px;
 }
+
+.doc-figure__caption--top{
+  margin: 0 0 .75rem 0;
+  font-size: calc(1.1rem * 1); /* double */
+  font-weight: 700;
+  color: #212529;
+  text-align: left;
+}
+
+/* Center the figure contents cleanly */
+.doc-figure{
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* centers the image box */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Keep caption readable (choose left or center) */
+.doc-figure__caption--top{
+  width: 100%;
+  text-align: left;        /* or: center */
+}
+
+/* Ensure image centers as a block */
+.doc-figure__img{
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
