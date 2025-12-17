@@ -247,9 +247,19 @@
 
         <section id="report_high_level_rationale">
           <h3>Rationale and sources of your project idea</h3>
+          <p>
+            We wanted a portable, battery-friendly instrument for quickly debugging real-world signals (especially PWM control signals and
+            small audio circuits) without needing a bench scope.
+          </p>
           <ul>
-            <li>Motivation / constraints</li>
-            <li>Prior work / inspiration (cite sources)</li>
+            <li>
+              <strong>Motivation / constraints:</strong> A handheld tool that is fast to deploy for labs, demos, and quick iteration,
+              while still providing both time-domain and frequency-domain visibility.
+            </li>
+            <li>
+              <strong>Inspiration:</strong> The Cornell ECE4760/ECE5730 course structure and prior RP2040 oscilloscope projects motivated a
+              dual-core approach that keeps the UI responsive while running DSP in parallel.
+            </li>
           </ul>
         </section>
 
@@ -257,16 +267,26 @@
           <h3>Background math</h3>
           <ul>
             <li>
-              <strong>Nyquist-Shannon Sampling Theorem:</strong> Explain why our 500 kSps sampling rate limits the maximum
-              measurable frequency to 250 kHz.
+              <strong>Nyquist-Shannon Sampling Theorem:</strong> With a sampling rate of 500 kSps, the highest measurable frequency
+              without aliasing is 250 kHz (the Nyquist frequency).
             </li>
             <li>
-              <strong>Discrete Fourier Transform (DFT):</strong> Briefly explain the math inside our <code>computeDFT()</code>
-              function:
+              <strong>Discrete Fourier Transform (DFT):</strong> Our <code>computeDFT()</code> converts a block of \(N\) time samples
+              into frequency bins:
               <pre><code>X_k = Σ_{n=0}^{N-1} x_n · e^{-j2πkn/N}</code></pre>
+              <p>Where:</p>
+              <ul>
+                <li><code>x_n</code> is the input voltage sample at index <code>n</code>.</li>
+                <li><code>X_k</code> is the output spectral component (magnitude and phase) at frequency bin <code>k</code>.</li>
+                <li>
+                  We compute real/imaginary components and then convert to magnitude, \( |X_k| = \sqrt{Re^2 + Im^2} \), to find peaks.
+                </li>
+              </ul>
             </li>
             <li>
-              <strong>Windowing:</strong> Explain the <strong>Hanning Window</strong> formula used to reduce spectral leakage:
+              <strong>Windowing (Hanning Window):</strong> Because we capture a finite “slice” of a continuous signal, the start and end
+              of the sample buffer rarely align perfectly. This discontinuity causes <em>spectral leakage</em>, where energy from one
+              frequency bleeds into neighboring bins. We apply a Hanning window before running the FFT/DFT to taper the edges:
               <pre><code>w(n) = 0.5(1 − cos(2πn/(N−1)))</code></pre>
             </li>
           </ul>
@@ -274,11 +294,48 @@
 
         <section id="report_high_level_structure">
           <h3>Logical structure</h3>
+          <p>
+            The system uses an Asymmetric Multiprocessing (AMP) model to ensure the User Interface (UI) never stutters, even when
+            performing heavy calculations.
+          </p>
           <p>Create a block diagram showing:</p>
           <ul>
-            <li><strong>Core 0:</strong> Handles User Input (Joystick/Buttons), Trigger Logic, and SPI Display Rendering.</li>
-            <li><strong>Core 1:</strong> Dedicated DSP coprocessor running the FFT math loop continuously.</li>
-            <li><strong>Shared Memory:</strong> The <code>frame_buf</code> array protected by semaphores.</li>
+            <li>
+              <strong>Core 0 (The Application Processor):</strong>
+              <ul>
+                <li>
+                  <strong>Responsibilities:</strong> Handles all User Input (Joystick, Buttons, Rotary Encoder), manages the Trigger Logic
+                  (detecting rising/falling edges), and drives the SPI TFT Display.
+                </li>
+                <li>
+                  <strong>Architecture:</strong> Runs a cooperative scheduler (<code>protothreads</code>) to toggle between input polling
+                  and screen rendering at 60Hz.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>Core 1 (The DSP Coprocessor):</strong>
+              <ul>
+                <li>
+                  <strong>Responsibilities:</strong> Dedicated entirely to number crunching. It runs an infinite loop that waits for fresh
+                  data, applies the Hanning Window, computes the DFT, and updates the FFT output array.
+                </li>
+                <li>
+                  <strong>Benefit:</strong> Because this math happens on a separate core, the oscilloscope trace on screen never “freezes”
+                  or lags, even if the math takes milliseconds to complete.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>Shared Memory &amp; Synchronization:</strong>
+              <ul>
+                <li>The <code>frame_buf</code> (ADC samples) and <code>fft_output</code> arrays reside in shared RAM.</li>
+                <li>
+                  Access is managed via flags and semaphores to ensure Core 1 doesn't try to calculate the FFT while Core 0 is
+                  simultaneously writing new data from the ADC.
+                </li>
+              </ul>
+            </li>
           </ul>
         </section>
 
