@@ -187,7 +187,7 @@
       <!-- Start
       ============================ -->
       <section id="report_start">
-        <h1>ScopeBoy Final Report</h1>
+        <h1>ScopeBoy: Handheld Mixed-Domain Oscilloscope (MDO)</h1>
         <!-- <p class="lead">Replace the placeholder text in each section with your project’s content.</p> -->
         <hr>
         <div class="row">
@@ -215,12 +215,26 @@
 
         <section id="report_intro_soundbite">
           <h3>One sentence “sound bite”</h3>
-          <p><em>Example:</em> “This project builds a ______ that ______ using ______.”</p>
+          <p>
+            This project builds ScopeBoy, a handheld, dual-core mixed-domain oscilloscope (MDO) on the Raspberry Pi Pico RP2040,
+            featuring real-time spectral analysis and gain control.
+          </p>
         </section>
 
         <section id="report_intro_summary">
           <h3>Summary (what you did and why)</h3>
-          <p>Describe the problem, your approach, and motivation.</p>
+          <p>
+            Using the RP2040 microcontroller, we created a portable device that samples signals at 500 kSps. It leverages the dual-core
+            architecture to separate signal processing (FFT math) from the user interface (drawing waveforms), ensuring a lag-free 60 FPS
+            experience.
+          </p>
+
+          <h4>Key Features</h4>
+          <ul>
+            <li><strong>Oscilloscope Mode:</strong> Adjustable timebase (10ms-1s), voltage scale, and live cursors.</li>
+            <li><strong>Spectrum Analyzer Mode:</strong> 64-bin real-time FFT with Hanning windowing and peak frequency detection.</li>
+            <li><strong>Easter Egg:</strong> A fully playable "Snake" game triggered by a hidden button combo.</li>
+          </ul>
         </section>
       </section>
 
@@ -241,12 +255,31 @@
 
         <section id="report_high_level_math">
           <h3>Background math</h3>
-          <p>Include equations, assumptions, and definitions as needed.</p>
+          <ul>
+            <li>
+              <strong>Nyquist-Shannon Sampling Theorem:</strong> Explain why our 500 kSps sampling rate limits the maximum
+              measurable frequency to 250 kHz.
+            </li>
+            <li>
+              <strong>Discrete Fourier Transform (DFT):</strong> Briefly explain the math inside our <code>computeDFT()</code>
+              function:
+              <pre><code>X_k = Σ_{n=0}^{N-1} x_n · e^{-j2πkn/N}</code></pre>
+            </li>
+            <li>
+              <strong>Windowing:</strong> Explain the <strong>Hanning Window</strong> formula used to reduce spectral leakage:
+              <pre><code>w(n) = 0.5(1 − cos(2πn/(N−1)))</code></pre>
+            </li>
+          </ul>
         </section>
 
         <section id="report_high_level_structure">
           <h3>Logical structure</h3>
-          <p>Block diagram description; modules; data flow; timing model.</p>
+          <p>Create a block diagram showing:</p>
+          <ul>
+            <li><strong>Core 0:</strong> Handles User Input (Joystick/Buttons), Trigger Logic, and SPI Display Rendering.</li>
+            <li><strong>Core 1:</strong> Dedicated DSP coprocessor running the FFT math loop continuously.</li>
+            <li><strong>Shared Memory:</strong> The <code>frame_buf</code> array protected by semaphores.</li>
+          </ul>
         </section>
 
         <section id="report_high_level_tradeoffs">
@@ -272,30 +305,179 @@
 
         <section id="report_design_program">
           <h3>Program details (what parts were tricky)</h3>
+          <p>
+            This project required solving several complex graphics and concurrency problems to achieve a stable 60 FPS update rate on the
+            RP2040.
+          </p>
+
+          <h4>Program Details: Technical Challenges &amp; Solutions</h4>
+
+          <p><strong>1. The "No-Fly Zone" Rendering Algorithm</strong></p>
+          <p>
+            One of the most persistent issues in digital oscilloscope displays is text flickering or overwriting. If the waveform is drawn
+            across the entire screen width, it inevitably scribbles over the voltage axis labels (e.g., "3.3V", "1.65V") on the left
+            side. Redrawing these labels every frame is computationally expensive and causes flashing.
+          </p>
           <ul>
-            <li>Architecture (tasks/threads/ISRs/state machines)</li>
-            <li>Tricky parts (timing, concurrency, memory, parsing, etc.)</li>
-            <li>Key algorithms and why</li>
+            <li>
+              <strong>The Solution:</strong> We implemented a viewport clipping algorithm in the <code>drawWaveformFromBuffer</code>
+              function. By defining specific <code>WAVE_MARGIN</code> constants (Left: 35px, Top: 25px, Bottom: 20px), the renderer
+              creates a "protected" area for the UI.
+            </li>
+            <li>
+              <strong>How it works:</strong> The drawing loop starts at <code>x = MARGIN_LEFT</code> rather than <code>0</code>. Any
+              signal sample that exceeds the vertical bounds (<code>MARGIN_TOP</code> or <code>MARGIN_BOTTOM</code>) is mathematically
+              clamped before drawing. This ensures the waveform "emerges" cleanly from behind the axis labels without ever corrupting the
+              text pixels.
+            </li>
+          </ul>
+
+          <p><strong>2. Flicker-Free Graphics (Smart Erase)</strong></p>
+          <p>
+            Standard graphics libraries often rely on <code>tft_fillScreen(BLACK)</code> to clear the frame before redrawing. On SPI
+            displays, this bulk pixel transfer is too slow and results in a visible "scanline" flicker.
+          </p>
+          <ul>
+            <li>
+              <strong>Snake Mode Implementation:</strong> Instead of clearing the screen, we used a <strong>differential rendering</strong>
+              strategy. The game logic tracks the exact position of the snake's tail before it moves. We draw a single black block over the
+              <em>old</em> tail position and a colored block at the <em>new</em> head position. This reduces the SPI bus load from
+              ~76,000 pixels per frame (full screen) to just ~200 pixels per frame.
+            </li>
+            <li>
+              <strong>Oscilloscope Grid:</strong> Similarly, when the waveform erases its old trace (drawing black lines), it often
+              accidentally deletes the grid lines. We added a "Repair Bot" logic inside the draw loop: if the eraser crosses a known grid
+              coordinate (e.g., <code>x=160</code> or <code>y=120</code>), the function immediately repaints that specific grid pixel,
+              maintaining a solid, unbroken reticle.
+            </li>
+          </ul>
+
+          <p><strong>3. Dual-Core Concurrency</strong></p>
+          <p>
+            The RP2040 features two ARM Cortex-M0+ cores, which we leveraged to separate the real-time blocking tasks from the math-heavy
+            processing.
+          </p>
+          <ul>
+            <li>
+              <strong>Core 0 (The Interface):</strong> Runs the <code>protothreads</code> scheduler to handle high-speed SPI display
+              rendering and user input (Joystick/Buttons). This ensures the UI remains responsive (60 FPS) at all times.
+            </li>
+            <li>
+              <strong>Core 1 (The Math Coprocessor):</strong> Dedicated solely to the FFT calculations. Using
+              <code>multicore_launch_core1</code>, this core continuously processes the ADC buffer, applying the Hanning window and
+              computing the Discrete Fourier Transform (DFT).
+            </li>
+            <li>
+              <strong>Synchronization:</strong> Shared memory access to the <code>frame_buf</code> array is protected using semaphores to
+              prevent race conditions (read-while-write errors).
+            </li>
           </ul>
         </section>
 
         <section id="report_design_hardware">
           <h3>Hardware details (build instructions)</h3>
-          <p>Provide enough detail that someone else could reproduce your build:</p>
+          <p>
+            The hardware design prioritizes modularity and low cost, using off-the-shelf components to create a professional-grade
+            instrument.
+          </p>
+
+          <h4>Bill of Materials (BOM)</h4>
           <ul>
-            <li>Bill of materials</li>
-            <li>Pin mapping / wiring</li>
-            <li>Power and grounding</li>
-            <li>Any protection circuitry</li>
+            <li><strong>Microcontroller:</strong> Raspberry Pi Pico (RP2040)</li>
+            <li><strong>Display:</strong> Adafruit 3.5&quot; TFT Breakout (320x480) with HX8357D driver</li>
+            <li><strong>Input:</strong> Adafruit Mini Gamepad (I2C Gamepad with Analog Joystick)</li>
+            <li><strong>Control:</strong> KY-040 Rotary Encoder (for precise zoom/scale adjustment)</li>
+            <li><strong>Interface:</strong> Breadboard and jumpers for rapid prototyping</li>
+          </ul>
+
+          <h4>Pin Mapping</h4>
+          <p>
+            The system uses <code>SPI1</code> for the display to reserve <code>SPI0</code> for future SD card expansion.
+          </p>
+
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Pico Pin</th>
+                  <th>Function</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>TFT Display</strong></td>
+                  <td>GP 14</td>
+                  <td>SPI1 SCK (Clock)</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>GP 15</td>
+                  <td>SPI1 TX (MOSI)</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>GP 9</td>
+                  <td>TFT_CS (Chip Select)</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>GP 10</td>
+                  <td>TFT_DC (Data/Command)</td>
+                </tr>
+                <tr>
+                  <td><strong>Rotary Encoder</strong></td>
+                  <td>Pin X</td>
+                  <td>CLK, DT (Encoder Lines)</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>Pin X</td>
+                  <td>SW (Push Button)</td>
+                </tr>
+                <tr>
+                  <td><strong>I2C Gamepad</strong></td>
+                  <td>GP 2, 3</td>
+                  <td>I2C SDA/SCL</td>
+                </tr>
+                <tr>
+                  <td><strong>Analog In</strong></td>
+                  <td>GP 26</td>
+                  <td>ADC0 (Probe Input)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Analog Front End (Gain Scaling)</h4>
+          <p>
+            While the current version uses a software-simulated gain stage, the architecture is designed to support a hardware op-amp
+            frontend.
+          </p>
+          <ul>
+            <li>The system implements three gain modes: <strong>Low (0.21x)</strong>, <strong>Med (0.39x)</strong>, and <strong>High (1.98x)</strong>.</li>
+            <li>
+              The <code>adc_to_volt</code> function dynamically scales the raw 12-bit ADC reading (0-4095) based on the active mode.
+              This allows the scope to measure signals ranging from millivolts (High Gain) to ~15V (Low Gain), with the software
+              automatically adjusting the grid labels to display the correct &quot;Real World&quot; voltage.
+            </li>
           </ul>
         </section>
 
         <section id="report_design_reuse">
           <h3>Reused code/design (explicit references)</h3>
+          <p>
+            This project stands on the shoulders of open-source libraries, modified for high-performance needs:
+          </p>
           <ul>
-            <li>List libraries, examples, and designs borrowed</li>
-            <li>What was modified vs used as-is</li>
-            <li>Links + licenses (if applicable)</li>
+            <li>
+              <strong>TFTMaster.h:</strong> A highly optimized SPI library for the RP2040, originally developed by Hunter Adams (Cornell
+              University). It provided the low-level pixel pushing primitives.
+            </li>
+            <li>
+              <strong>Protothreads (pt):</strong> A lightweight threading library by Adam Dunkels, used here to implement the cooperative
+              multitasking scheduler on Core 0.
+            </li>
           </ul>
         </section>
 
