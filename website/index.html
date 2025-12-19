@@ -214,7 +214,6 @@
         <h2>Project Introduction</h2>
 
         <section id="report_intro_soundbite">
-          <h3>One sentence “sound bite”</h3>
           <p>
             This project builds ScopeBoy, a handheld, dual-core mixed-domain oscilloscope (MDO) on the Raspberry Pi Pico RP2040,
             featuring real-time spectral analysis and gain control.
@@ -222,7 +221,6 @@
         </section>
 
         <section id="report_intro_summary">
-          <h3>Summary (what you did and why)</h3>
           <p>
             Using the RP2040 microcontroller, we created a portable device that samples signals at 500 kSps. It leverages the dual-core
             architecture to separate signal processing (FFT math) from the user interface (drawing waveforms), ensuring a lag-free 60 FPS
@@ -235,6 +233,15 @@
             <li><strong>Spectrum Analyzer Mode:</strong> 64-bin real-time FFT with Hanning windowing and peak frequency detection.</li>
             <li><strong>Easter Egg:</strong> A fully playable "Snake" game triggered by a hidden button combo.</li>
           </ul>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              ScopeBoy 3D Render - Assembled Device
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_3d_overall.png"
+                alt="ScopeBoy 3D Assembled View" />
+          </figure>
         </section>
       </section>
 
@@ -341,9 +348,51 @@
 
         <section id="report_high_level_tradeoffs">
           <h3>Hardware/software tradeoffs</h3>
+
+          <p><strong>1. Signal Processing (FFT): Software (Core 1) vs. Dedicated DSP Hardware</strong></p>
           <ul>
-            <li>Why hardware vs software for each subsystem</li>
-            <li>Complexity, performance, power, cost, maintainability</li>
+            <li><strong>Decision:</strong> Implemented <strong>Software FFT</strong> on the secondary Cortex-M0+ core.</li>
+            <li>
+              <strong>Performance:</strong> While a dedicated DSP chip or FPGA would calculate DFTs microseconds faster, the RP2040's dual-core
+              architecture allowed us to offload the math to Core 1. This prevents the UI (Core 0) from freezing, achieving a "good enough"
+              real-time update rate (approx. 15-30 Hz for FFT) without additional hardware.
+            </li>
+            <li>
+              <strong>Cost &amp; Complexity:</strong> Using the existing microcontroller reduced the Bill of Materials (BOM) cost by ~$5-10 and
+              significantly reduced PCB complexity.
+            </li>
+            <li>
+              <strong>Maintainability:</strong> Doing the math in C allows for easy adjustments to windowing functions (e.g., swapping Hanning
+              for Blackman) without rewiring hardware.
+            </li>
+          </ul>
+
+          <p><strong>2. Analog Front End: Digital Zoom vs. Analog Gain</strong></p>
+          <ul>
+            <li><strong>Decision:</strong> A <strong>Hybrid approach</strong>. We use hardware switches (Gain Modes) for coarse range adjustment, refined by software scaling.</li>
+            <li>
+              <strong>Performance:</strong> Purely software "zoom" (multiplying the ADC value) destroys signal resolution; zooming 10x on a 10mV
+              signal amplifies the quantization noise. Hardware gain (using Op-Amps/Relays) preserves the Signal-to-Noise Ratio (SNR) before it
+              hits the ADC.
+            </li>
+            <li>
+              <strong>Complexity:</strong> Adding hardware gain stages increases circuit complexity and power consumption compared to a simple
+              voltage divider, but it was strictly necessary to measure small signals accurately.
+            </li>
+          </ul>
+
+          <p><strong>3. Display Driving: Hardware SPI vs. Bit-Banging</strong></p>
+          <ul>
+            <li><strong>Decision:</strong> <strong>Hardware SPI Peripheral</strong>.</li>
+            <li>
+              <strong>Performance:</strong> Driving a 320x240 display requires pushing ~153,000 bytes per frame. "Bit-banging" (toggling pins in
+              software) would cap the frame rate at ~5 FPS. Using the RP2040's hardware SPI block allows us to reach 60 FPS with minimal CPU
+              overhead.
+            </li>
+            <li>
+              <strong>Power:</strong> Hardware peripherals are more power-efficient as they allow the CPU to sleep or perform other tasks (like
+              polling inputs) during data transmission.
+            </li>
           </ul>
         </section>
 
@@ -519,6 +568,38 @@
               automatically adjusting the grid labels to display the correct &quot;Real World&quot; voltage.
             </li>
           </ul>
+
+          <h4>3D Assembly Views</h4>
+          <p>
+            The following exploded views illustrate the physical assembly of the ScopeBoy device:
+          </p>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Exploded View: PCB and Back Housing
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_exploded_pcb_back.jpeg"
+                alt="ScopeBoy PCB and Back Housing Exploded" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Exploded View: Front Housing, Battery, and Keypad
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_exploded_front_battery.jpeg"
+                alt="ScopeBoy Front Housing, Battery, and Keypad Exploded" />
+          </figure>
+
+          <figure class="doc-figure">
+            <figcaption class="doc-figure__caption doc-figure__caption--top">
+              Exploded View: Complete Assembly (Front, Back, and PCB)
+            </figcaption>
+            <img class="img-fluid doc-figure__img"
+                src="assets/images/scopeboy_exploded_full.jpeg"
+                alt="ScopeBoy Complete Exploded View" />
+          </figure>
         </section>
 
         <section id="report_design_reuse">
