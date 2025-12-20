@@ -807,11 +807,50 @@
 
         <section id="report_design_ai">
           <h3>Thorough discussion of AI use</h3>
+
+          <h4>1. Tools Used</h4>
           <ul>
-            <li>What tools you used (model, IDE assistants, etc.)</li>
-            <li>What you used AI for (design, debugging, documentation, tests)</li>
-            <li>Verification steps you took (unit tests, measurements, code review)</li>
-            <li>Any AI-generated content you did <strong>not</strong> use (and why)</li>
+            <li><strong>Models:</strong> Google Gemini (Pro/Flash) and OpenAI GPT-5.</li>
+            <li><strong>IDE Assistants:</strong> CoPilot in VSCode (once)</li>
+          </ul>
+
+          <h4>2. Application of AI</h4>
+          <ul>
+            <li>
+              <strong>Feasibility Checks:</strong> Before writing code, we used AI to estimate the feasibility of adding complex features like
+              the FFT spectrum analyzer and the "Snake" game on the secondary core without disrupting the 60Hz oscilloscope refresh rate.
+            </li>
+            <li>
+              <strong>Code Refactoring &amp; Reuse:</strong> AI was instrumental during the major overhaul of the input system. We needed to add
+              new modes (Menu navigation, Snake game) that required reusing existing low-level button reading logic. We prompted the AI to
+              "wrap" our raw bit-masking logic as the part of our modular state machine (<code>handleInput</code>) that could support multiple
+              contexts (Scope vs. Game) without duplicating the low-level driver code.
+            </li>
+          </ul>
+
+          <h4>3. Verification Steps</h4>
+          <ul>
+            <li>
+              <strong>Manual Code Review:</strong> Every block of AI-generated C code was manually reviewed for hardware safety.
+            </li>
+            <li>
+              <strong>Signal Measurement:</strong> For the math functions suggested by AI (such as the gain scaling factors), we verified the
+              output by injecting known voltage signals from a function generator and confirming the oscilloscope displayed the correct values.
+            </li>
+          </ul>
+
+          <h4>4. AI-Generated Content NOT Used</h4>
+          <p><strong>Attempted TFT Display Driver Port:</strong> Early in the project, we attempted to use AI to port an existing Arduino-based TFT library (Adafruit_ILI9341) to the Raspberry Pi Pico C SDK.</p>
+          <ul>
+            <li>
+              <strong>Why it was discarded:</strong> The AI hallucinated compatibility with Arduino-specific hardware abstraction layers (like
+              <code>SPI.h</code> and <code>Adafruit_GFX.h</code>) that do not exist in the bare-metal Pico SDK environment. It produced code
+              with heavy dependency chains and incorrect SPI timing constraints that could not compile.
+            </li>
+            <li>
+              <strong>Resolution:</strong> We discarded the AI-generated driver entirely and adopted the <code>TFTMaster.h</code> library
+              (developed by Hunter Adams), which provides optimized, hardware-specific SPI functions for the RP2040.
+            </li>
           </ul>
         </section>
       </section>
@@ -1005,7 +1044,27 @@
           <h3>Appendix D: Team member task breakdown</h3>
           <ul>
             <li><strong>Robbie:</strong> Rotary encoder driver, PCB design, analog circuit redesign and breadboarding, analog circuit code</li>
-            <li><strong>Immanual:</strong> tasks</li>
+            <li>
+              <strong>Immanuel Varghese Koshy:</strong>
+              <ul>
+                <li>
+                  <strong>Software &amp; Firmware:</strong>
+                  <ul>
+                    <li>Developed the complete User Interface (UI) system, including the oscilloscope grid, menu navigation, and real-time waveform rendering.</li>
+                    <li>Implemented the Spectrum Analyzer (FFT) mode, including windowing functions and frequency bin visualization.</li>
+                    <li>Wrote the I2C drivers for the Adafruit Seesaw Gamepad to handle joystick and button inputs.</li>
+                    <li>Engineered the "Smart Redraw" graphics engine to eliminate screen flicker and optimize SPI bus usage.</li>
+                    <li>Created the "Snake" game Easter egg, demonstrating isolated game loop logic within the scope architecture.</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong>Hardware &amp; Mechanical:</strong>
+                  <ul>
+                    <li>Designed the mechanical housing, creating custom STL models for the 3D-printed enclosure to fit the Pico, display, and controls.</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
           </ul>
         </section>
       </section>
