@@ -52,8 +52,9 @@
         </button>
 
         <div class="d-flex align-items-center mr-auto">
-          <a class="logo ml-md-3" href="index.html" title="iDocs Template">
-            <img src="assets/images/logo.png" alt="iDocs Template"/>
+          <!-- Logo removed; use text instead -->
+          <a class="logo ml-md-3" href="index.html" title="ScopeBoy">
+            <strong>ScopeBoy</strong>
           </a>
           <span class="text-2 ml-2">v1.0</span>
         </div>
@@ -128,10 +129,10 @@
       <li class="nav-item">
         <a class="nav-link" href="#report_design">Program / Hardware Design</a>
         <ul class="nav flex-column">
-          <li class="nav-item"><a class="nav-link" href="#report_design_program">Program details (what was tricky)</a></li>
-          <li class="nav-item"><a class="nav-link" href="#report_design_hardware">Hardware details (how to build)</a></li>
-          <li class="nav-item"><a class="nav-link" href="#report_design_reuse">Reused code/design (explicit references)</a></li>
-          <li class="nav-item"><a class="nav-link" href="#report_design_failed">Things tried that did not work</a></li>
+          <li class="nav-item"><a class="nav-link" href="#report_design_program">Program details</a></li>
+          <li class="nav-item"><a class="nav-link" href="#report_design_hardware">Hardware details</a></li>
+          <li class="nav-item"><a class="nav-link" href="#report_design_reuse">Reused code/design</a></li>
+          <li class="nav-item"><a class="nav-link" href="#report_design_failed">Things that did not work</a></li>
           <li class="nav-item"><a class="nav-link" href="#report_design_ai">Thorough discussion of AI use</a></li>
         </ul>
       </li>
@@ -140,7 +141,7 @@
         <a class="nav-link" href="#report_results">Results of the Design</a>
         <ul class="nav flex-column">
           <li class="nav-item"><a class="nav-link" href="#report_results_data">Test data / traces / waveforms</a></li>
-          <li class="nav-item"><a class="nav-link" href="#report_results_speed">Speed of execution (UX/perf)</a></li>
+          <li class="nav-item"><a class="nav-link" href="#report_results_speed">Speed of execution</a></li>
           <li class="nav-item"><a class="nav-link" href="#report_results_accuracy">Accuracy</a></li>
           <li class="nav-item"><a class="nav-link" href="#report_results_safety">Safety enforcement</a></li>
           <li class="nav-item"><a class="nav-link" href="#report_results_usability">Usability</a></li>
@@ -222,7 +223,7 @@
 
         <section id="report_intro_summary">
           <p>
-            Using the RP2040 microcontroller, we created a portable device that samples signals at 500 kSps. It leverages the dual-core
+            Using the RP2040 microcontroller, we created a device that samples signals at 500 kSps. It leverages the dual-core
             architecture to separate signal processing (FFT math) from the user interface (drawing waveforms), ensuring a lag-free 60 FPS
             experience.
           </p>
@@ -236,7 +237,7 @@
 
           <figure class="doc-figure">
             <figcaption class="doc-figure__caption doc-figure__caption--top">
-              ScopeBoy 3D Render - Assembled Device
+              ScopeBoy 3D Render - Assembled Device Concept
             </figcaption>
             <img class="img-fluid doc-figure__img"
                 src="assets/images/scopeboy_3d_overall.png"
@@ -244,6 +245,21 @@
           </figure>
         </section>
       </section>
+
+      <h4>Project Demo Video</h4>
+      <div class="embed-responsive embed-responsive-16by9">
+        <iframe
+          class="embed-responsive-item"
+          src="https://www.youtube-nocookie.com/embed/MxbmWoJlQEc"
+          title="ScopeBoy Demo Video"
+          frameborder="0"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      
 
       <hr class="divider">
 
@@ -396,10 +412,10 @@
           </ul>
         </section>
 
-        <section id="report_high_level_ip">
+        <!-- <section id="report_high_level_ip">
           <h3>Relevant patents, copyrights, and trademarks</h3>
-          <p>Discuss any known IP that is relevant to your design (and how you avoided conflicts).</p>
-        </section>
+          
+        </section> -->
       </section>
 
       <hr class="divider">
@@ -410,7 +426,7 @@
         <h2>Program / Hardware Design</h2>
 
         <section id="report_design_program">
-          <h3>Program details (what parts were tricky)</h3>
+          <h3>Program details</h3>
           <p>
             This project required solving several complex graphics and concurrency problems to achieve a stable 60 FPS update rate on the
             RP2040.
@@ -478,16 +494,45 @@
               prevent race conditions (read-while-write errors).
             </li>
           </ul>
+
+          <p><strong>4. Rotary Encoder</strong></p>
+          <p>
+            The rotary encoder generates pulses on its CLK and DT pins when rotated. The direction is determined by looking at if the pulse on CLK or DT was first. Professor Bruce had previously worked with rotary encoders, so we started by referencing his work (<a href="https://people.ece.cornell.edu/land/courses/ece4760/RP2040/C_SDK_joystick/index_vga_Joystick.html" target="_blank" rel="noopener noreferrer">found here</a>). He used a protothread and would sample the GPIO pins at a set interval. While this solution works, we wanted to use interrupts to make the driver cleaner.
+          </p>
+          <ul>
+            <li>
+              <strong>Interrupts:</strong> The RP2040 uses a single ISR to handle all GPIO interrupts. We set up the interrupt once for rising edges on GPIO pins, then check which pin triggered it.
+            </li>
+            <li>
+              <strong>Delta:</strong> When the interrupt is triggered, a counter is incremented or decremented depending on whether the CLK or DT pin was triggered. When we process the input, we use the counter value to determine how many times the encoder was rotated, then reset the counter.
+            </li>
+            <li>
+              <strong>Debouncing:</strong> In order to prevent bouncing, we placed on the CLK and DT pins of the encoder. We found that 10 nF capacitors were enough to reduce bouncing, while still keeping the encoder responsive.
+            </li>
+          </ul>
+
+          <p><strong>5. ADC</strong></p>
+          <p>
+            We decided to use the ADC built into the RP2040, mostly due to time after loosing the PCBs.
+          </p>
+          <ul>
+            <li>
+              <strong>Sample Rate:</strong> The internal ADC operates at 500 kS/s. We wanted to use the full sampling rate to get as much data as we could. This meant not using the clock divider for the ADC.
+            </li>
+            <li>
+              <strong>DMA:</strong> To read data from the ADC without blocking a CPU core, we used DMA channels. We had a two-channel configuration, with a control channel and a data channel. The data channel would read data from the ADC when it was available and store it in a buffer array. When it reached the end of the array, the control channel would trigger and reset the data channel's pointer to the start of the array.
+            </li>
+          </ul>
         </section>
 
         <section id="report_design_hardware">
-          <h3>Hardware details (build instructions)</h3>
+          <h3>Hardware details</h3>
           <p>
             The hardware design prioritizes modularity and low cost, using off-the-shelf components to create a professional-grade
-            instrument.
+            instrument. Figure 1 in Appendix C shows the full schematic for the breadboard version of the ScopeBoy.
           </p>
 
-          <h4>Bill of Materials (BOM)</h4>
+        <h4>Bill of Materials (BOM)</h4>
           <ul>
             <li><strong>Microcontroller:</strong> Raspberry Pi Pico (RP2040)</li>
             <li><strong>Display:</strong> Adafruit 3.5&quot; TFT Breakout (320x480) with HX8357D driver</li>
@@ -496,9 +541,138 @@
             <li><strong>Interface:</strong> Breadboard and jumpers for rapid prototyping</li>
           </ul>
 
+          <h4 class="mt-4 mb-2">Breadboard Analog Front End BOM</h4>
+          <p class="text-muted mb-3">Components used for input coupling, biasing, protection, and gain/trigger circuitry. See the schematic in Figure 1 for more details.</p>
+
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Part / Value</th>
+                      <th>Qty</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Op-amp</td>
+                      <td>MCP6242 (dual, rail-to-rail)</td>
+                      <td>1</td>
+                      <td>Gain/buffer stages</td>
+                    </tr>
+                    <tr>
+                      <td>Comparator </td>
+                      <td>AD8561</td>
+                      <td>1</td>
+                      <td>Fast edge/trigger detection</td>
+                    </tr>
+                    <tr>
+                      <td>DAC</td>
+                      <td>MCP4822</td>
+                      <td>1</td>
+                      <td>Adjustable trigger threshold</td>
+                    </tr>
+                    <tr>
+                      <td>Analog switch</td>
+                      <td>ADG621 (dual SPST)</td>
+                      <td>1</td>
+                      <td>Gain range switching</td>
+                    </tr>
+                    <tr>
+                      <td>Input resistor</td>
+                      <td>1 MΩ</td>
+                      <td>1</td>
+                      <td>Scope-probe style input impedance</td>
+                    </tr>
+                    <tr>
+                      <td>Compensation capacitor</td>
+                      <td>10–22 pF</td>
+                      <td>1</td>
+                      <td>Input compensation (probe-dependent)</td>
+                    </tr>
+                    <tr>
+                      <td>AC coupling capacitor</td>
+                      <td>0.1–1 µF</td>
+                      <td>1</td>
+                      <td>Blocks DC before biasing</td>
+                    </tr>
+                    <tr>
+                      <td>Bias divider resistors</td>
+                      <td>10 kΩ</td>
+                      <td>2</td>
+                      <td>Generates ~1.65 V mid-bias</td>
+                    </tr>
+                    <tr>
+                      <td>Connector / adapter</td>
+                      <td><a href="https://www.adafruit.com/product/2889" target="_blank" rel="noopener noreferrer">BNC-to-terminal block</a></td>
+                      <td>1</td>
+                      <td>Connects standard scope probes to breadboard</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+          <h4 class="mt-4 mb-2">PCB BOM</h4>
+          <p class="text-muted mb-3">
+            Download the full BOM CSV:
+            <a class="btn btn-sm btn-outline-primary ml-2"
+               href="assets/bom/scopeboyBOM.csv"
+               download>Download CSV</a>
+          </p>
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Value</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>C1,C3,C8,C10,C11</td><td>2.2u</td><td>5</td></tr>
+                <tr><td>C2,C26</td><td>1u</td><td>2</td></tr>
+                <tr><td>C4,C5</td><td>10n</td><td>2</td></tr>
+                <tr><td>C6</td><td>4.7u</td><td>1</td></tr>
+                <tr><td>C7</td><td>1p</td><td>1</td></tr>
+                <tr><td>C9</td><td>6.8p</td><td>1</td></tr>
+                <tr><td>C12,C13,C14,C16,C18,C19,C20,C21,C22,C23,C27,C28,C29,C30</td><td>100n</td><td>14</td></tr>
+                <tr><td>C15,C17,C24</td><td>22u</td><td>3</td></tr>
+                <tr><td>C25</td><td>160p</td><td>1</td></tr>
+                <tr><td>C31,C32</td><td>10nF</td><td>2</td></tr>
+
+                <tr><td>D1,D2,D3</td><td>D</td><td>3</td></tr>
+
+                <tr><td>J1</td><td>SMA Samtec SMA-J-P-X-ST-EM1 EdgeMount </td><td>2</td></tr>
+                <tr><td>J5</td><td>SM04B-SRSS-TB</td><td>1</td></tr>
+                <tr><td>J6,J7</td><td>SM03B-SRSS-TB</td><td>2</td></tr>
+
+                <tr><td>Q1</td><td>DMG2305UX-7</td><td>1</td></tr>
+
+                <tr><td>R1,R2</td><td>87k</td><td>2</td></tr>
+                <tr><td>R3</td><td>680k</td><td>1</td></tr>
+                <tr><td>R4,R6</td><td>50k</td><td>2</td></tr>
+                <tr><td>R5</td><td>100k</td><td>1</td></tr>
+                <tr><td>R7,R8</td><td>0</td><td>2</td></tr>
+                <tr><td>R9,R14,R17,R23</td><td>1k</td><td>4</td></tr>
+                <tr><td>R10</td><td>47</td><td>1</td></tr>
+                <tr><td>R11,R12,R15,R16,R18</td><td>100</td><td>5</td></tr>
+                <tr><td>R13</td><td>680</td><td>1</td></tr>
+                <tr><td>R19,R24</td><td>22</td><td>2</td></tr>
+                <tr><td>R20,R21</td><td>4.7k</td><td>2</td></tr>
+                <tr><td>R22</td><td>1MEG</td><td>1</td></tr>
+
+                <tr><td>U1</td><td>LP2985-3.3</td><td>1</td></tr>
+                <tr><td>U2</td><td>LM27762</td><td>1</td></tr>
+                <tr><td>U3</td><td>OPA354</td><td>1</td></tr>
+                <tr><td>U4</td><td>ADG621</td><td>1</td></tr>
+                <tr><td>U5</td><td>LMH6629</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+
           <h4>Pin Mapping</h4>
           <p>
-            The system uses <code>SPI1</code> for the display to reserve <code>SPI0</code> for future SD card expansion.
+            The system uses <code>SPI0</code> for the display and <code>SPI1</code> for the DAC. Running them both on the same bus caused interference.
           </p>
 
           <div class="table-responsive">
@@ -513,43 +687,63 @@
               <tbody>
                 <tr>
                   <td><strong>TFT Display</strong></td>
-                  <td>GP 14</td>
-                  <td>SPI1 SCK (Clock)</td>
+                  <td>GPIO 14</td>
+                  <td>SPI0 SCK (Clock)</td>
                 </tr>
                 <tr>
                   <td></td>
-                  <td>GP 15</td>
-                  <td>SPI1 TX (MOSI)</td>
+                  <td>GPIO 15</td>
+                  <td>SPI0 TX (MOSI)</td>
                 </tr>
                 <tr>
                   <td></td>
-                  <td>GP 9</td>
+                  <td>GPIO 18</td>
                   <td>TFT_CS (Chip Select)</td>
                 </tr>
                 <tr>
                   <td></td>
-                  <td>GP 10</td>
+                  <td>GPIO 16</td>
                   <td>TFT_DC (Data/Command)</td>
                 </tr>
                 <tr>
                   <td><strong>Rotary Encoder</strong></td>
-                  <td>Pin X</td>
+                  <td>GPIO 19, 20</td>
                   <td>CLK, DT (Encoder Lines)</td>
                 </tr>
                 <tr>
                   <td></td>
-                  <td>Pin X</td>
+                  <td>GPIO 6</td>
                   <td>SW (Push Button)</td>
                 </tr>
                 <tr>
                   <td><strong>I2C Gamepad</strong></td>
-                  <td>GP 2, 3</td>
+                  <td>GPIO 2, 3</td>
                   <td>I2C SDA/SCL</td>
                 </tr>
                 <tr>
                   <td><strong>Analog In</strong></td>
-                  <td>GP 26</td>
+                  <td>GPIO 26</td>
                   <td>ADC0 (Probe Input)</td>
+                </tr>
+                <tr>
+                  <td><strong>Gain Select</strong></td>
+                  <td>GPIO 8, 9</td>
+                  <td>Sel1, Sel0</td>
+                </tr>
+                <tr>
+                  <td><strong>DAC SPI</strong></td>
+                  <td>GPIO 10</td>
+                  <td>SPI1 SCK (Clock)</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>GPIO 11</td>
+                  <td>SPI1 TX (MOSI)</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>GPIO 13</td>
+                  <td>DAC_CS (Chip Select)</td>
                 </tr>
               </tbody>
             </table>
@@ -603,25 +797,31 @@
         </section>
 
         <section id="report_design_reuse">
-          <h3>Reused code/design (explicit references)</h3>
+          <h3>Reused code/design</h3>
           <p>
-            This project stands on the shoulders of open-source libraries, modified for high-performance needs:
+            This project stands on the shoulders of open-source libraries and hardware designs, modified for high-performance needs:
           </p>
           <ul>
             <li>
-              <strong>TFTMaster.h:</strong> A highly optimized SPI library for the RP2040, originally developed by Hunter Adams (Cornell
-              University). It provided the low-level pixel pushing primitives.
+              <strong>TFTMaster.h:</strong> A highly optimized SPI library for the RP2040, originally developed by MEng students at Cornell
+              University. It provided the low-level pixel pushing primitives.
             </li>
             <li>
               <strong>Protothreads (pt):</strong> A lightweight threading library by Adam Dunkels, used here to implement the cooperative
               multitasking scheduler on Core 0.
             </li>
+            <li>
+              <strong>RPScope:</strong> A Pico based dual-channel oscilloscope design by Jenny List. We modified their PCB to make it single channel, and work with our TFT screen, encoder, joystick, and battery charger.
+            </li>
           </ul>
         </section>
 
         <section id="report_design_failed">
-          <h3>Things you tried which did not work</h3>
-          <p>Our biggest failure was in the PCB. Not because the PCB didn't work or anything. We don't know if the PCB worked, because it wandered off (read: was stollen) over Thanksgiving break. TODO finish this</p>
+          <h3>Things which did not work</h3>
+          <p>Our biggest failure was in the PCB. Not because the PCB didn't work or anything. We don't know whether the PCB worked because it wandered off (read: was stolen) over Thanksgiving break. This forced us to think on our feet and redesign the analog front end. We built a working front end, but it had significantly less bandwidth than we originally planned. We had planned for 1 MHz of bandwidth, but ultimately ended up at around 70 kHz. While it has substantially less bandwidth, the scope would still work for audio-range signals, so it serves a purpose.</p>
+          <p>We also designed an enclosure for the PCB, which we planned to 3D print. After we lost the boards, we scrapped the enclosure because the breadboard was fragile enough that it didn’t make sense to keep the system handheld. This also meant that we scrapped our plans to power it with a LiPo battery. We had the battery charger component from Adafruit, but since the board wasn’t handheld, it didn't make sense to power it.</p>
+          <p>Even though we lost the PCBs and had to redesign the front end, this allowed us to correct some design flaws in the original we had used as the base. Initially, our board had a Coax connector instead of the standard BNC connectors used by scope probes. This was because the design lacked the 1MΩ resistor and 10-22 pF capacitor used in oscilloscopes for 10x mode. So, using a coax SMA made more sense. However, that would have been annoying, since we would have had to make our own probe cable or get a coax-to-BNC connector adapter. We ordered a BNC-to-2-terminal block, which we used with the breadboard to connect standard scope probes, and put the proper resistor and capacitor in the circuit. This made connecting a scope probe easier, but it was still not a perfect solution. The scope probe's impedance wasn't matched, and 10X mode still didn't work because the signal was attenuated to the point that it was lost in the noise by the time it reached the gain stage.</p>
+          <p>The original PCB design also included a -3.3 V rail for the op-amps, allowing signals to reach negative voltages. For the breadboard design, we used the 3.3V and grounds directly from the Pico. This added more noise and, more importantly, required biasing all signals to prevent clipping at the op-amp rails. We blocked the DC bias in the original signal using a capacitor at the input, then applied our own 1.65 V bias. This meant that the scope couldn’t measure DC signals, with a minimum frequency of around 2 kHz.</p>
         </section>
 
         <section id="report_design_ai">
@@ -630,7 +830,7 @@
           <h4>1. Tools Used</h4>
           <ul>
             <li><strong>Models:</strong> Google Gemini (Pro/Flash) and OpenAI GPT-5.</li>
-            <li><strong>IDE Assistants:</strong> CoPilot in VSCode (once)</li>
+            <li><strong>IDE Assistants:</strong> CoPilot in VSCode</li>
           </ul>
 
           <h4>2. Application of AI</h4>
@@ -644,6 +844,9 @@
               new modes (Menu navigation, Snake game) that required reusing existing low-level button reading logic. We prompted the AI to
               "wrap" our raw bit-masking logic as the part of our modular state machine (<code>handleInput</code>) that could support multiple
               contexts (Scope vs. Game) without duplicating the low-level driver code.
+            </li>
+            <li>
+              <strong>Website Formatting:</strong> AI was used to assist with the creation of the website. It helped with formatting parts of the website, like the image gallary, and some tables.
             </li>
           </ul>
 
@@ -668,7 +871,7 @@
             </li>
             <li>
               <strong>Resolution:</strong> We discarded the AI-generated driver entirely and adopted the <code>TFTMaster.h</code> library
-              (developed by Hunter Adams), which provides optimized, hardware-specific SPI functions for the RP2040.
+              (developed by MEng students), which provides optimized, hardware-specific SPI functions for the RP2040.
             </li>
           </ul>
         </section>
@@ -682,33 +885,165 @@
         <h2>Results of the Design</h2>
 
         <section id="report_results_data">
-          <h3>Test data / traces / waveforms</h3>
-          <p>Embed plots, screenshots, scope traces, or tables.</p>
-        </section>
+        <h3>Test data / traces / waveforms</h3>
+
+        <!-- <h4 class="mt-3">Demo Images</h4> -->
+        <p class="text-muted">
+          Images of the scope in action:
+        </p>
+
+        <div id="demo-images-gallery" class="row"></div>
+
+        <script>
+          (function () {
+            const gallery = document.getElementById("demo-images-gallery");
+            if (!gallery) return;
+
+            fetch("assets/images/demo_images/manifest.json", { cache: "no-store" })
+              .then((r) => {
+                if (!r.ok) throw new Error("manifest.json not found");
+                return r.json();
+              })
+              .then((items) => {
+                if (!Array.isArray(items) || items.length === 0) {
+                  gallery.innerHTML =
+                    '<div class="col-12"><p class="text-muted mb-0">No images listed in manifest.json yet.</p></div>';
+                  return;
+                }
+
+                // Normalize items into { file, title, caption } and drop invalid entries
+                const normalized = items
+                  .map((item) => {
+                    if (typeof item === "string") {
+                      const file = item;
+                      return {
+                        file,
+                        title: file.replace(/\.[^/.]+$/, ""),
+                        caption: "Placeholder caption: describe this image.",
+                      };
+                    }
+
+                    if (item && typeof item === "object" && typeof item.file === "string" && item.file.trim() !== "") {
+                      const file = item.file.trim();
+                      return {
+                        file,
+                        title: (item.title && String(item.title).trim()) || file.replace(/\.[^/.]+$/, ""),
+                        caption: (item.caption && String(item.caption).trim()) || "Placeholder caption: describe this image.",
+                      };
+                    }
+
+                    // Missing file -> skip
+                    return null;
+                  })
+                  .filter(Boolean);
+
+                if (normalized.length === 0) {
+                  gallery.innerHTML =
+                    '<div class="col-12"><p class="text-muted mb-0">Manifest loaded, but no valid <code>file</code> entries were found.</p></div>';
+                  return;
+                }
+
+                gallery.innerHTML = normalized
+                .map(({ file, title, caption }, idx) => {
+                  const src = `assets/images/demo_images/${file}`;
+
+                  // Force layout: row 1 = 3 images, rows after = 2 images per row (on lg+ screens)
+                  const colClass =
+                  idx < 2
+                    ? "col-12 col-md-6 col-lg-6"
+                    : idx < 5
+                      ? "col-12 col-md-6 col-lg-4"
+                      : "col-12 col-md-6 col-lg-6";
+
+                  return `
+                    <div class="${colClass} mb-3">
+                      <div class="card h-100">
+                        <a href="${src}" target="_blank" rel="noopener noreferrer">
+                          <img class="card-img-top demo-gallery-img" src="${src}" alt="${title}">
+                        </a>
+                        <div class="card-body">
+                          <h6 class="card-title mb-2">${title}</h6>
+                          <p class="card-text text-muted mb-0">${caption}</p>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                })
+                .join("");
+              })
+              .catch((e) => {
+                gallery.innerHTML =
+                  `<div class="col-12"><p class="text-muted mb-0">Could not load gallery manifest: <code>${String(e.message || e)}</code></p></div>`;
+              });
+          })();
+        </script>
+      </section>
 
         <section id="report_results_speed">
           <h3>Speed of execution</h3>
           <ul>
-            <li>Latency / responsiveness</li>
-            <li>Flicker / hesitation</li>
-            <li>Concurrency behavior</li>
+            <li>
+              <strong>Latency / responsiveness:</strong> The UI runs in a dedicated Core 0 protothread loop that targets ~60 FPS by yielding for
+              ~16.7 ms per frame. Input is polled every frame so knob/joystick actions feel immediate.
+            </li>
+            <li>
+              <strong>Flicker / hesitation:</strong> Instead of clearing and redrawing the full screen each frame (too slow over SPI), we use
+              “smart redraw”: only update the parts that change (waveform/menus) and repair any grid pixels that get erased. This avoids visible
+              scanline flicker.
+            </li>
+            <li>
+              <strong>Concurrency behavior:</strong> The heavy math (DFT/FFT) runs on Core 1, while Core 0 focuses on rendering + input. This
+              separation prevents spectrum calculations from freezing the oscilloscope trace.
+            </li>
+            <li>
+              <strong>DMA for ADC:</strong> DMA channels move data from the ADC to an input buffer to keep the CPU free to draw the UI and perform calculations.
+            </li>
           </ul>
         </section>
 
-        <section id="report_results_accuracy">
-          <h3>Accuracy</h3>
-          <p>Quantify accuracy (numeric error, timing, frequency error, etc.).</p>
-        </section>
+       <section id="report_results_accuracy">
+        <h3>Accuracy</h3>
+        <ul>
+          <li>
+            We did not take direct measurements to compare the expected and actual outputs. We did verify that the signals looked mostly correct,
+            although we do expect noise in the system and the RP2040's ADC to introduce artifacts in the system.
+          </li>
+          <li>We performed this informal verifiaction by comparing our signal to a real oscilloscope's output to make sure they aligned. However, we should have recoreded actual measurements to formally verify out output.</li>
+        </ul>
+      </section>
 
-        <section id="report_results_safety">
-          <h3>Safety enforcement</h3>
-          <p>Describe constraints, limits, watchdogs, input validation, fail-safe behaviors.</p>
-        </section>
+      <section id="report_results_safety">
+        <h3>Safety enforcement</h3>
+        <ul>
+          <li>
+            Due to the analog front end, the scope is fundamentally limited to signals of 30V peak to peak. This voltage level is relatively safe,
+            especially given that the scope doesn't work with signals of less than 2kHz. Still, being on a breadboard does mean that there are
+            semi-exposed wires, so users should be careful. This problem would have been solved with the enclosure.
+          </li>
+          <li>
+            We had originally planned on using a LiPo battery to power the board. LiPos can be dangerous if charged incorrectly or punctured. We were
+            going to use a battery charging circuit to prevent improper charging, and would have enclosed the battery.
+          </li>
+          <li>
+            We did not use the watchdog or any other safety features on the Pico. This is a low-stakes device, and crashes would only inconvenience
+            the user, not harm them. We still tried to make the code robust to prevent crashes.
+          </li>
+        </ul>
+      </section>
 
-        <section id="report_results_usability">
-          <h3>Usability</h3>
-          <p>Discuss usability for you and other users; include user feedback if available.</p>
-        </section>
+      <section id="report_results_usability">
+        <h3>Usability</h3>
+        <ul>
+          <li>
+            The final version of the oscilloscope worked, but was not the most usable. Its biggest constraint was that it had two breadboards, which
+            made it fragile and hard to transport. This version would not be handheld, and we had to be careful when transporting it.
+          </li>
+          <li>
+            The controls all worked, but users had to hold the rotary encoder and joystick/button controller in their hands. Ideally, these would
+            have been integrated into the case. The rotary encoder occasionally registered an incorrect input due to our pure-hardware debouncing.
+            Accessing the snake minigame required precise button inputs, which didn't always trigger.
+          </li>
+        </ul>
       </section>
 
       <hr class="divider">
@@ -719,25 +1054,52 @@
         <h2>Conclusions</h2>
 
         <section id="report_conclusions_analysis">
-          <h3>Expectation vs results / what you’d do differently</h3>
-          <p>Analyze outcomes and propose improvements.</p>
+          <h3>Expectation vs results</h3>
+          <p>Our project ended in a very differnt state than we originally intended. We originally intended to have a fully integrated solution, including a PCB and enclosure to make it portable. Our final design was only on a breadboard, and should not be moved much to avoid the wires on the board breaking. Still, given the circumstances, the project turned out surprisingly well. We were able to demonstrate many software features that professional oscilloscopes have, and proved that this concept is feasable. We are considering an independent study to fully realize our original vision for this project.. Here are a list of ideas that we are thinking about for a proper version:</p>
+          <ul>
+            <li>Redo the PCB and validate the analog front end bandwidth target.</li>
+            <li>Re-add -3.3V rail, and figure out how to accept both AC and DC signals.</li>
+            <li>Design/print an enclosure and make the system portable again.</li>
+            <li>Add battery power + charging and improve power integrity/noise.</li>
+            <li>Integrate the RP2040 directly onto a PCB instead of using a Pico in a surface mount configuration.</li>
+            <li>Use a USB-C connector to charge the device and get data, because it is the year 2025 why does the Pico still use Micro-B?</li>
+            <li>Add proper 10× probe compensation.</li>
+          </ul>
         </section>
+        
 
         <section id="report_conclusions_standards">
           <h3>Conformance to applicable standards</h3>
-          <p>List standards you considered and how you complied.</p>
+          <p>We did not reference any standards in the making of this project. We do not believe that our design is suitable for high precision applications.</p>
         </section>
 
         <section id="report_conclusions_ip">
-          <h3>Intellectual property considerations</h3>
-          <ul>
-            <li>Reused code/design and whose IP it was</li>
-            <li>Public domain use (if any)</li>
-            <li>Reverse engineering considerations</li>
-            <li>NDA requirements (if any)</li>
-            <li>Potential patent opportunities</li>
-          </ul>
-        </section>
+        <h3>Intellectual property considerations</h3>
+        
+          <li>
+            We started using the
+            <a href="https://hackaday.io/project/188051-rpscope" target="_blank" rel="noopener noreferrer">Pi Pico Oscilloscope</a>
+            project by Jenny List on Hackaday as the base of our scope. They wrote an article about the hardware design and released the design
+            files on Hackaday. We saved time by modifying their PCB. Their original code was in Python, so we did not use any of their code and
+            wrote all of our own in C.
+          </li>
+          <li>
+            After losing the PCB, we redesigned the entire front end, using the original board as loose inspiration, but changing much of the
+            circuit.
+          </li>
+          <li>
+            We made sure that any libraries we used were open source to comply with patent and copyright law.
+          </li>
+          <li>
+            While the name “ScopeBoy” is similar to the “GameBoy” trademark owned by Nintendo, it is not an entertainment device and should be
+            distinct enough. We only take inspiration from the name and form factor and do not reference the GameBoy elsewhere.
+          </li>
+          <li>
+            If developed further, we could potentially patent the project. However, we did not check for similar devices, and publishing this
+            level of detail would make a patent significantly harder to obtain. We would rather open source the design to make it accessible to
+            others, especially since our design uses open-source work.
+          </li>
+        
       </section>
 
       <hr class="divider">
@@ -756,7 +1118,6 @@
             <p><strong>Include exactly one of the following sentences:</strong></p>
             <ul>
               <li>“The group approves this report for inclusion on the course website.”</li>
-              <li>“The group does not approve this report for inclusion on the course website.”</li>
             </ul>
           </section>
 
@@ -765,7 +1126,6 @@
             <p><strong>Include exactly one of the following sentences:</strong></p>
             <ul>
               <li>“The group approves the video for inclusion on the course youtube channel.”</li>
-              <li>“The group does not approve the video for inclusion on the course youtube channel.”</li>
             </ul>
           </section>
         </section>
@@ -778,6 +1138,10 @@
               GitHub Repository:
               <a href="https://github.com/leslier7/ece5730-scopeboy-final-project" target="_blank" rel="noopener noreferrer">Link</a>
             </li>
+            <li>The code is stored in the top level. <code>Final_Project.c</code> is the main file.</li>
+            <li>ScopeBoy contains the PCB KiCAD project</li>
+            <li>ScopeBoyBreadboard contains the breadboard KiCAD project with the schematic</li>
+            <li>website contains the website code</li>
           </ul>
         </section>
 
@@ -864,6 +1228,27 @@
           <ul>
             <li><strong>Robbie:</strong> Rotary encoder driver, PCB design, analog circuit redesign and breadboarding, analog circuit code</li>
             <li>
+              <strong>Robbie Leslie:</strong>
+              <ul>
+                <li>
+                  <strong>Software &amp; Firmware:</strong>
+                  <ul>
+                    <li>Developed the interupt driven rotary encoder driver.</li>
+                    <li>Developed the ADC code using the DMA channels, and trigger logic.</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong>Hardware &amp; Mechanical:</strong>
+                  <ul>
+                    <li>Modified the PCB we found to accomodate screen, rotary encoder, I2C joystick, battery circuit, and debug connectors. Modified component selection on PCB.</li>
+                    <li>Procured all components used in the project.</li>
+                    <li>Redesigned analog front end after loosing PCB.</li>
+                    <li>Assembled and debugged the analog front end on the breadboard.</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li>
               <strong>Immanuel Varghese Koshy:</strong>
               <ul>
                 <li>
@@ -907,12 +1292,18 @@
             ADG621 Dual Switch Datasheet: <a href="https://www.mouser.com/datasheet/3/1014/1/ADG621.pdf" target="_blank" rel="noopener noreferrer">
               Link
             </a>
-          <li>Vendor sites</li>
           <li>
             Pi Pico Oscilloscope Original Design: <a href="https://hackaday.com/2022/11/06/a-pi-pico-oscilloscope/" target="_blank" rel="noopener noreferrer">
               Hackaday Link
             </a>
-          <li>Background sites/papers</li>
+          <li>
+            Professor Bruce's Rotary Encoder Driver: <a href="https://people.ece.cornell.edu/land/courses/ece4760/RP2040/C_SDK_joystick/index_vga_Joystick.html" target="_blank" rel="noopener noreferrer">
+              Link
+            </a>
+          <li>
+            iDocs Website Template: <a href="https://github.com/harnishdesign/iDocs" target="_blank" rel="noopener noreferrer">
+              Link
+            </a>
         </ul>
       </section>
 

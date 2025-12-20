@@ -2985,3 +2985,13 @@ input:-internal-autofill-selected {
   max-width: 100%;
   height: auto;
 }
+
+/* Header title + version text size */
+#header .logo strong {
+  font-size: 1.6rem; /* adjust */
+  line-height: 1.1;
+}
+
+#header .text-2 {
+  font-size: 1.1rem; /* adjust */
+}
